@@ -12,12 +12,12 @@ function App() {
       <div>
         <Router>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/accept-invite" element={<AcceptInvite />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Home />} />
             </Route>
+            <Route path="/" element={<LandingPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>

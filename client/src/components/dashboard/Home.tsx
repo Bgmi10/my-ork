@@ -75,7 +75,7 @@ export default function Home() {
   const renderActiveSection = () => {
     switch (activeSection) {
       case "dashboard":
-        return <Dashboard user={user} />
+        return <Dashboard user={user} setActiveSection={setActiveSection} />
       case "create-okr":
         return <CreateOKRForm user={user} onBack={() => setActiveSection("dashboard")} />
       case "create-user":
@@ -93,7 +93,7 @@ export default function Home() {
       case "departments":
         return <Department />
       default:
-        return <Dashboard user={user} />
+        return <Dashboard user={user} setActiveSection={setActiveSection} />
     }
   }
 

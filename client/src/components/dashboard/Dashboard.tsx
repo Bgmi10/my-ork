@@ -1,7 +1,7 @@
 import { Building, Users, Target, BarChart3, Plus, TrendingUp, Calendar, CheckCircle2, User, Clock } from "lucide-react";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function Dashboard({ user }: { user: any }) {
+export default function Dashboard({ user, setActiveSection }: { user: any, setActiveSection: (section: string) => void }) {
     const isAdmin = user.role === 'ADMIN';
     
     // Calculate real stats from actual user data
@@ -135,7 +135,7 @@ export default function Dashboard({ user }: { user: any }) {
                                 </div>
                             </div>
                             <div className="mt-4 lg:mt-0">
-                                <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2">
+                                <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2" onClick={() => setActiveSection('create-okr')}>
                                     <Plus className="w-5 h-5" />
                                     <span>{isAdmin ? 'Create Company OKR' : 'Create New OKR'}</span>
                                 </button>

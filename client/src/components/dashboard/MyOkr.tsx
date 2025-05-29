@@ -26,8 +26,6 @@ export default function MyOkr({ setActiveSection }: { setActiveSection: (section
     const [okrs, setOkrs] = useState(user?.objectives || []);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
-    //@ts-ignore
-    const [isCreating, setIsCreating] = useState(false);
     const [editingOkr, setEditingOkr] = useState<any>(null);
     const [editingKeyResult, setEditingKeyResult] = useState<any>(null);
     const [expandedOkrs, setExpandedOkrs] = useState<string[]>([]);
@@ -51,7 +49,6 @@ export default function MyOkr({ setActiveSection }: { setActiveSection: (section
     // Calculate OKR statistics
     const totalOkrs = okrs.length;
     const completedOkrs = okrs.filter((okr: any) => okr.progress === 100).length;
-
     const overallProgress = totalOkrs > 0 ? Math.round(okrs.reduce((acc: number, okr: any) => acc + okr.progress, 0) / totalOkrs) : 0;
 
     const formatDate = (dateString: string) => {
@@ -485,9 +482,7 @@ export default function MyOkr({ setActiveSection }: { setActiveSection: (section
                             </div>
                             <div className="mt-4 lg:mt-0">
                                 <button 
-                                    onClick={() =>{
-                                        setActiveSection("create-okr");
-                                    }}
+                                    onClick={() => setActiveSection("create-okr")}
                                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2"
                                 >
                                     <Plus className="w-5 h-5" />
@@ -560,7 +555,7 @@ export default function MyOkr({ setActiveSection }: { setActiveSection: (section
                         </p>
                         {okrs.length === 0 && (
                             <button 
-                                onClick={() => { setActiveSection("create-okr")}}
+                                onClick={() => setActiveSection("create-okr")}
                                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center space-x-2 mx-auto"
                             >
                                 <Plus className="w-5 h-5" />
@@ -577,212 +572,295 @@ export default function MyOkr({ setActiveSection }: { setActiveSection: (section
                             
                             return (
                                 <div key={okr.id} className="bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-6 hover:bg-white/15 transition-all duration-300">
-                                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
-                                        <div className="flex-1 mb-4 lg:mb-0">
-                                            <div className="flex items-start space-x-4">
-                                                <div className={`w-12 h-12 bg-gradient-to-br ${getStatusColor(okr)} rounded-xl flex items-center justify-center flex-shrink-0`}>
-                                                    <StatusIcon className="w-6 h-6 text-white" />
+                                    {editingOkr?.id === okr.id ? (
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-blue-200 mb-1">Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={editFormData.title}
+                                                        onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    />
                                                 </div>
-                                                <div className="flex-1">
-                                                    <div className="flex items-center space-x-3 mb-2">
-                                                        <h3 className="text-xl font-bold text-white">{okr.title}</h3>
-                                                        <span className={`inline-block bg-gradient-to-r ${getStatusColor(okr)} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
-                                                            {getStatusText(okr)}
-                                                        </span>
-                                                        {hasKeyResults && (
-                                                            <button
-                                                                onClick={() => toggleOkrExpansion(okr.id)}
-                                                                className="text-blue-200 hover:text-white transition-colors flex items-center space-x-1"
-                                                            >
-                                                                <span className="text-sm">Key Results ({okr.keyResults.length})</span>
-                                                                {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    <p className="text-blue-200 mb-4">{okr.description}</p>
-                                                    
-                                                    {/* Progress Bar */}
-                                                    <div className="mb-4">
-                                                        <div className="flex justify-between items-center mb-2">
-                                                            <span className="text-sm text-blue-200">Progress</span>
-                                                            <span className="text-sm font-semibold text-white">{okr.progress}%</span>
-                                                        </div>
-                                                        <div className="w-full bg-white/20 rounded-full h-2">
-                                                            <div 
-                                                                className={`h-2 bg-gradient-to-r ${getStatusColor(okr)} rounded-full transition-all duration-300`}
-                                                                style={{ width: `${okr.progress}%` }}
-                                                            ></div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Dates */}
-                                                    <div className="flex flex-wrap gap-4 text-sm">
-                                                        <div className="flex items-center space-x-2 text-blue-200">
-                                                            <Calendar className="w-4 h-4" />
-                                                            <span>Start: {formatDate(okr.startDate)}</span>
-                                                        </div>
-                                                        <div className="flex items-center space-x-2 text-blue-200">
-                                                            <Clock className="w-4 h-4" />
-                                                            <span>End: {formatDate(okr.endDate)}</span>
-                                                        </div>
-                                                    </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-blue-200 mb-1">Progress</label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="100"
+                                                        value={editFormData.progress}
+                                                        onChange={(e) => setEditFormData({...editFormData, progress: Number(e.target.value)})}
+                                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    />
                                                 </div>
                                             </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-blue-200 mb-1">Description</label>
+                                                <textarea
+                                                    value={editFormData.description}
+                                                    onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                                                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    rows={3}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-sm font-medium text-blue-200 mb-1">Start Date</label>
+                                                    <input
+                                                        type="date"
+                                                        value={editFormData.startDate}
+                                                        onChange={(e) => setEditFormData({...editFormData, startDate: e.target.value})}
+                                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-medium text-blue-200 mb-1">End Date</label>
+                                                    <input
+                                                        type="date"
+                                                        value={editFormData.endDate}
+                                                        onChange={(e) => setEditFormData({...editFormData, endDate: e.target.value})}
+                                                        className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end space-x-3">
+                                                <button
+                                                    onClick={handleCancelEdit}
+                                                    className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-medium shadow-lg transition-all duration-300"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={handleSaveEdit}
+                                                    disabled={isLoading}
+                                                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                                >
+                                                    {isLoading ? (
+                                                        <>
+                                                            <Loader className="w-4 h-4 animate-spin" />
+                                                            <span>Saving...</span>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Save className="w-4 h-4" />
+                                                            <span>Save Changes</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
                                         </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="flex space-x-2">
-                                            <button 
-                                                onClick={() => handleEdit(okr)}
-                                                disabled={isLoading}
-                                                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white p-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <Edit3 className="w-5 h-5" />
-                                            </button>
-                                            <button 
-                                                onClick={() => handleDelete(okr)}
-                                                disabled={isLoading}
-                                                className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white p-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Key Results Section */}
-                                    {hasKeyResults && isExpanded && (
-                                        <div className="mt-6 pl-16 space-y-4">
-                                            <h4 className="text-lg font-semibold text-white flex items-center space-x-2">
-                                                <Award className="w-5 h-5" />
-                                                <span>Key Results</span>
-                                            </h4>
-                                            {okr.keyResults.map((keyResult: any) => {
-                                                const KeyResultIcon = getKeyResultStatusIcon(keyResult.status);
-                                                const progress = keyResult.targetValue > 0 ? Math.min(100, (keyResult.currentValue / keyResult.targetValue) * 100) : 0;
-                                                
-                                                return (
-                                                    <div key={keyResult.id} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
-                                                        {editingKeyResult?.id === keyResult.id ? (
-                                                            <div className="space-y-4">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                    <div>
-                                                                        <label className="block text-sm font-medium text-blue-200 mb-1">Title</label>
-                                                                        <input
-                                                                            type="text"
-                                                                            value={keyResultFormData.title}
-                                                                            onChange={(e) => setKeyResultFormData({...keyResultFormData, title: e.target.value})}
-                                                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="block text-sm font-medium text-blue-200 mb-1">Status</label>
-                                                                        <select
-                                                                            value={keyResultFormData.status}
-                                                                            onChange={(e) => setKeyResultFormData({...keyResultFormData, status: e.target.value})}
-                                                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        >
-                                                                            <option value="NOT_STARTED">Not Started</option>
-                                                                            <option value="IN_PROGRESS">In Progress</option>
-                                                                            <option value="AT_RISK">At Risk</option>
-                                                                            <option value="COMPLETED">Completed</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                                    <div>
-                                                                        <label className="block text-sm font-medium text-blue-200 mb-1">Current Value</label>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={keyResultFormData.currentValue}
-                                                                            onChange={(e) => setKeyResultFormData({...keyResultFormData, currentValue: Number(e.target.value)})}
-                                                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        />
-                                                                    </div>
-                                                                    <div>
-                                                                        <label className="block text-sm font-medium text-blue-200 mb-1">Target Value</label>
-                                                                        <input
-                                                                            type="number"
-                                                                            value={keyResultFormData.targetValue}
-                                                                            onChange={(e) => setKeyResultFormData({...keyResultFormData, targetValue: Number(e.target.value)})}
-                                                                            className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                                <div className="flex justify-end space-x-3">
+                                    ) : (
+                                        <>
+                                            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between">
+                                                <div className="flex-1 mb-4 lg:mb-0">
+                                                    <div className="flex items-start space-x-4">
+                                                        <div className={`w-12 h-12 bg-gradient-to-br ${getStatusColor(okr)} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                                                            <StatusIcon className="w-6 h-6 text-white" />
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center space-x-3 mb-2">
+                                                                <h3 className="text-xl font-bold text-white">{okr.title}</h3>
+                                                                <span className={`inline-block bg-gradient-to-r ${getStatusColor(okr)} text-white px-3 py-1 rounded-full text-sm font-semibold`}>
+                                                                    {getStatusText(okr)}
+                                                                </span>
+                                                                {hasKeyResults && (
                                                                     <button
-                                                                        onClick={handleCancelKeyResultEdit}
-                                                                        className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-medium shadow-lg transition-all duration-300"
+                                                                        onClick={() => toggleOkrExpansion(okr.id)}
+                                                                        className="text-blue-200 hover:text-white transition-colors flex items-center space-x-1"
                                                                     >
-                                                                        Cancel
+                                                                        <span className="text-sm">Key Results ({okr.keyResults.length})</span>
+                                                                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                                                                     </button>
-                                                                    <button
-                                                                        onClick={handleSaveKeyResult}
-                                                                        disabled={isLoading}
-                                                                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-                                                                    >
-                                                                        {isLoading ? (
-                                                                            <>
-                                                                                <Loader className="w-4 h-4 animate-spin" />
-                                                                                <span>Saving...</span>
-                                                                            </>
-                                                                        ) : (
-                                                                            <>
-                                                                                <Save className="w-4 h-4" />
-                                                                                <span>Save Changes</span>
-                                                                            </>
-                                                                        )}
-                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-blue-200 mb-4">{okr.description}</p>
+                                                            
+                                                            {/* Progress Bar */}
+                                                            <div className="mb-4">
+                                                                <div className="flex justify-between items-center mb-2">
+                                                                    <span className="text-sm text-blue-200">Progress</span>
+                                                                    <span className="text-sm font-semibold text-white">{okr.progress}%</span>
+                                                                </div>
+                                                                <div className="w-full bg-white/20 rounded-full h-2">
+                                                                    <div 
+                                                                        className={`h-2 bg-gradient-to-r ${getStatusColor(okr)} rounded-full transition-all duration-300`}
+                                                                        style={{ width: `${okr.progress}%` }}
+                                                                    ></div>
                                                                 </div>
                                                             </div>
-                                                        ) : (
-                                                            <>
-                                                                <div className="flex items-center justify-between">
-                                                                    <div className="flex items-center space-x-3 flex-1">
-                                                                        <div className={`w-8 h-8 bg-gradient-to-br ${getKeyResultStatusColor(keyResult.status)} rounded-lg flex items-center justify-center flex-shrink-0`}>
-                                                                            <KeyResultIcon className="w-4 h-4 text-white" />
-                                                                        </div>
-                                                                        <div className="flex-1">
-                                                                            <div className="flex items-center space-x-2 mb-1">
-                                                                                <h5 className="font-semibold text-white">{keyResult.title}</h5>
-                                                                                <span className={`inline-block bg-gradient-to-r ${getKeyResultStatusColor(keyResult.status)} text-white px-2 py-1 rounded-full text-xs font-medium`}>
-                                                                                    {keyResult.status.replace('_', ' ')}
-                                                                                </span>
-                                                                            </div>
-                                                                            <div className="flex items-center space-x-4 text-sm text-blue-200">
-                                                                                <span>Progress: {keyResult.currentValue} / {keyResult.targetValue}</span>
-                                                                                <span>{Math.round(progress)}%</span>
-                                                                            </div>
-                                                                            <div className="w-full bg-white/10 rounded-full h-1.5 mt-2">
-                                                                                <div 
-                                                                                    className={`h-1.5 bg-gradient-to-r ${getKeyResultStatusColor(keyResult.status)} rounded-full`}
-                                                                                    style={{ width: `${progress}%` }}
-                                                                                ></div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex space-x-2">
-                                                                        <button 
-                                                                            onClick={() => handleEditKeyResult(keyResult)}
-                                                                            disabled={isLoading}
-                                                                            className="bg-white/10 hover:bg-white/20 border border-white/20 text-white p-2 rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                        >
-                                                                            <Edit3 className="w-4 h-4" />
-                                                                        </button>
-                                                                        <button 
-                                                                            onClick={() => handleDeleteKeyResult(keyResult)}
-                                                                            disabled={isLoading}
-                                                                            className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white p-2 rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4" />
-                                                                        </button>
-                                                                    </div>
+
+                                                            {/* Dates */}
+                                                            <div className="flex flex-wrap gap-4 text-sm">
+                                                                <div className="flex items-center space-x-2 text-blue-200">
+                                                                    <Calendar className="w-4 h-4" />
+                                                                    <span>Start: {formatDate(okr.startDate)}</span>
                                                                 </div>
-                                                            </>
-                                                        )}
+                                                                <div className="flex items-center space-x-2 text-blue-200">
+                                                                    <Clock className="w-4 h-4" />
+                                                                    <span>End: {formatDate(okr.endDate)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
+                                                </div>
+
+                                                {/* Action Buttons */}
+                                                <div className="flex space-x-2">
+                                                    <button 
+                                                        onClick={() => handleEdit(okr)}
+                                                        disabled={isLoading}
+                                                        className="bg-white/10 hover:bg-white/20 border border-white/20 text-white p-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Edit3 className="w-5 h-5" />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(okr)}
+                                                        disabled={isLoading}
+                                                        className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white p-3 rounded-xl font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        <Trash2 className="w-5 h-5" />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Key Results Section */}
+                                            {hasKeyResults && isExpanded && (
+                                                <div className="mt-6 pl-16 space-y-4">
+                                                    <h4 className="text-lg font-semibold text-white flex items-center space-x-2">
+                                                        <Award className="w-5 h-5" />
+                                                        <span>Key Results</span>
+                                                    </h4>
+                                                    {okr.keyResults.map((keyResult: any) => {
+                                                        const KeyResultIcon = getKeyResultStatusIcon(keyResult.status);
+                                                        const progress = keyResult.targetValue > 0 ? Math.min(100, (keyResult.currentValue / keyResult.targetValue) * 100) : 0;
+                                                        
+                                                        return (
+                                                            <div key={keyResult.id} className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
+                                                                {editingKeyResult?.id === keyResult.id ? (
+                                                                    <div className="space-y-4">
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                            <div>
+                                                                                <label className="block text-sm font-medium text-blue-200 mb-1">Title</label>
+                                                                                <input
+                                                                                    type="text"
+                                                                                    value={keyResultFormData.title}
+                                                                                    onChange={(e) => setKeyResultFormData({...keyResultFormData, title: e.target.value})}
+                                                                                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                                />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="block text-sm font-medium text-blue-200 mb-1">Status</label>
+                                                                                <select
+                                                                                    value={keyResultFormData.status}
+                                                                                    onChange={(e) => setKeyResultFormData({...keyResultFormData, status: e.target.value})}
+                                                                                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                                >
+                                                                                    <option value="NOT_STARTED">Not Started</option>
+                                                                                    <option value="IN_PROGRESS">In Progress</option>
+                                                                                    <option value="AT_RISK">At Risk</option>
+                                                                                    <option value="COMPLETED">Completed</option>
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                            <div>
+                                                                                <label className="block text-sm font-medium text-blue-200 mb-1">Current Value</label>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={keyResultFormData.currentValue}
+                                                                                    onChange={(e) => setKeyResultFormData({...keyResultFormData, currentValue: Number(e.target.value)})}
+                                                                                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                                />
+                                                                            </div>
+                                                                            <div>
+                                                                                <label className="block text-sm font-medium text-blue-200 mb-1">Target Value</label>
+                                                                                <input
+                                                                                    type="number"
+                                                                                    value={keyResultFormData.targetValue}
+                                                                                    onChange={(e) => setKeyResultFormData({...keyResultFormData, targetValue: Number(e.target.value)})}
+                                                                                    className="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                                />
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex justify-end space-x-3">
+                                                                            <button
+                                                                                onClick={handleCancelKeyResultEdit}
+                                                                                className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-4 py-2 rounded-xl font-medium shadow-lg transition-all duration-300"
+                                                                            >
+                                                                                Cancel
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={handleSaveKeyResult}
+                                                                                disabled={isLoading}
+                                                                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-4 py-2 rounded-xl font-medium shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                                                                            >
+                                                                                {isLoading ? (
+                                                                                    <>
+                                                                                        <Loader className="w-4 h-4 animate-spin" />
+                                                                                        <span>Saving...</span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Save className="w-4 h-4" />
+                                                                                        <span>Save Changes</span>
+                                                                                    </>
+                                                                                )}
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <>
+                                                                        <div className="flex items-center justify-between">
+                                                                            <div className="flex items-center space-x-3 flex-1">
+                                                                                <div className={`w-8 h-8 bg-gradient-to-br ${getKeyResultStatusColor(keyResult.status)} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                                                                    <KeyResultIcon className="w-4 h-4 text-white" />
+                                                                                </div>
+                                                                                <div className="flex-1">
+                                                                                    <div className="flex items-center space-x-2 mb-1">
+                                                                                        <h5 className="font-semibold text-white">{keyResult.title}</h5>
+                                                                                        <span className={`inline-block bg-gradient-to-r ${getKeyResultStatusColor(keyResult.status)} text-white px-2 py-1 rounded-full text-xs font-medium`}>
+                                                                                            {keyResult.status.replace('_', ' ')}
+                                                                                        </span>
+                                                                                    </div>
+                                                                                    <div className="flex items-center space-x-4 text-sm text-blue-200">
+                                                                                        <span>Progress: {keyResult.currentValue} / {keyResult.targetValue}</span>
+                                                                                        <span>{Math.round(progress)}%</span>
+                                                                                    </div>
+                                                                                    <div className="w-full bg-white/10 rounded-full h-1.5 mt-2">
+                                                                                        <div 
+                                                                                            className={`h-1.5 bg-gradient-to-r ${getKeyResultStatusColor(keyResult.status)} rounded-full`}
+                                                                                            style={{ width: `${progress}%` }}
+                                                                                        ></div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex space-x-2">
+                                                                                <button 
+                                                                                    onClick={() => handleEditKeyResult(keyResult)}
+                                                                                    disabled={isLoading}
+                                                                                    className="bg-white/10 hover:bg-white/20 border border-white/20 text-white p-2 rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                                >
+                                                                                    <Edit3 className="w-4 h-4" />
+                                                                                </button>
+                                                                                <button 
+                                                                                    onClick={() => handleDeleteKeyResult(keyResult)}
+                                                                                    disabled={isLoading}
+                                                                                    className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white p-2 rounded-lg font-semibold shadow-lg transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                                >
+                                                                                    <Trash2 className="w-4 h-4" />
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             );

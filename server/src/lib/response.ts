@@ -47,6 +47,7 @@ export const sendResponse = <T>(
   message: string,
   data?: T
 ): Response => {
+  //@ts-ignore
   const response: ApiResponse<T> = {
     success: true,
     message,

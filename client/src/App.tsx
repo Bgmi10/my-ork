@@ -16,8 +16,8 @@ function App() {
             <Route path="/accept-invite" element={<AcceptInvite />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Home />} />
-            </Route>
             <Route path="/" element={<LandingPage />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
